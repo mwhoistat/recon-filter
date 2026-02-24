@@ -87,22 +87,7 @@ def _expand_files(targets: List[Path], recursive: bool, excludes: List[str]) -> 
             
     return list(final_files)
 
-@app.command("filter", help="""Execute the professional file filtering pipeline engine.
-
-recon-filter filter provides extreme stream processing over logs, payload dumps, and PDFs without consuming memory.
-It automatically preserves structures (like JSON arrays and CSV fields).
-
-Advanced URL Processing & Clustering (New in V1.0.0):
-  By default, if URLs are detected, they are automatically validated.
-  Use --extract-params to gather query parameters efficiently using O(1) memory counters.
-  Use --cluster-extension or --cluster-depth to automatically generate subdirectories mapping routes cleanly.
-
-Example Basic:
-  recon-filter filter ./target.log -r "CRITICAL"
-  
-Example Advanced Clustering:
-  recon-filter filter ./recon_data -r "https?://" --cluster-extension --extract-params
-""")
+@app.command("filter", help="Execute the professional file filtering pipeline engine.")
 def filter_cmd(
     files: Optional[List[Path]] = typer.Argument(None, help="Input files or directories to process."),
     config_path: Optional[Path] = typer.Option(None, "--config", help="Load parameters from a YAML/JSON config file."),
@@ -136,19 +121,23 @@ def filter_cmd(
     enable_cache: bool = typer.Option(False, "--enable-cache", help="Skip unchanged SHA256 processing assets securely."),
     performance_report: bool = typer.Option(False, "--performance-report", help="Adds internal CPU/RAM mappings into local report logs."),
     
+    # URL Validation & Analysis
+    strict_url: bool = typer.Option(False, "--strict-url", help="Drop targets that are not cleanly formatted URLs."),
+    allow_no_scheme: bool = typer.Option(False, "--allow-no-scheme", help="Auto-prepend 'http://' strictly to raw domains."),
+    extract_params: bool = typer.Option(False, "--extract-params", help="Aggregate URL Parameter distributions."),
+    param_report: bool = typer.Option(False, "--param-report", help="Generate dedicated 'parameters.json' cluster file."),
+    
+    # Clustering Flow
+    group_by_ext: bool = typer.Option(False, "--group-by-extension", help="Dispatch matches categorically based on detected URL extensions."),
+    group_by_depth: bool = typer.Option(False, "--group-by-depth", help="Dispatch matches categorically based on URL branch depths."),
+    depth_limit: Optional[int] = typer.Option(None, "--depth-limit", help="Bound maximum depth generation arrays."),
+    
     # Auditing / Checksums
     no_backup: bool = typer.Option(False, "--no-backup", help="Disable structural source file backups."),
     backup_dir: Optional[str] = typer.Option(None, "--backup-dir", help="Shift backup `.bak` entities into isolated domains."),
     generate_hash_report: bool = typer.Option(False, "--generate-hash-report", help="Calculate contextual SHA256 integrity sums internally."),
     export_stats: Optional[str] = typer.Option(None, "--export-stats", help="Dump final statistics payload structurally to this JSON location."),
     report_format: str = typer.Option("json", "--report-format", help="Dictates structure of the exported metrics report (json/csv)."),
-    
-    # URL Processing & Clustering
-    url_mode: bool = typer.Option(False, "--url-mode", help="Force active URL validation (RFC compliant)."),
-    no_url_validate: bool = typer.Option(False, "--no-url-validate", help="Disable automatic URL validation if patterns look like URLs."),
-    extract_params: bool = typer.Option(False, "--extract-params", help="Extract URL query parameters to parameter_summary.json incrementally."),
-    cluster_extension: bool = typer.Option(False, "--cluster-extension", help="Create output directories based on URL/Path extensions (e.g. js/, png/)."),
-    cluster_depth: bool = typer.Option(False, "--cluster-depth", help="Create output directories clustering targets by path depth (e.g. depth_3/)."),
     
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose pipeline tracing."),
     quiet: bool = typer.Option(False, "--quiet", "-q", help="Silence standard logs."),
@@ -208,11 +197,13 @@ def filter_cmd(
                 backup_dir=backup_dir,
                 generate_hash_report=generate_hash_report,
                 performance_report=performance_report,
-                url_mode=url_mode,
-                no_url_validate=no_url_validate,
+                strict_url=strict_url,
+                allow_no_scheme=allow_no_scheme,
                 extract_params=extract_params,
-                cluster_extension=cluster_extension,
-                cluster_depth=cluster_depth
+                param_report=param_report,
+                group_by_extension=group_by_ext,
+                group_by_depth=group_by_depth,
+                depth_limit=depth_limit
             )
     except Exception as e:
         logger.error(f"Error: Configuration validation rejected: {e}")
@@ -286,60 +277,6 @@ def filter_cmd(
 
     elapsed = time.time() - start_time
     
-    # ----------------------------------------------------
-    # V1.0.0 Unified Analyzer Reporting
-    # ----------------------------------------------------
-    if config.extract_params:
-        from collections import Counter
-        global_params = Counter()
-        total_urls = 0
-        for s in global_stats:
-            global_params.update(s.get("param_stats", {}))
-            total_urls += s.get("urls_analyzed", 0)
-            
-        if global_params:
-            most_common = global_params.most_common(10)
-            payload = {
-                "total_urls_analyzed_for_params": total_urls,
-                "total_unique_parameters": len(global_params),
-                "top_10_most_frequent_parameters": [{"parameter": k, "frequency": v} for k, v in most_common],
-                "complete_frequency_distribution": dict(global_params)
-            }
-            param_out = (output_dir / "parameter_summary.json") if output_dir else Path("parameter_summary.json")
-            try:
-                with param_out.open('w', encoding='utf-8') as f:
-                    json.dump(payload, f, indent=4)
-                if visuals: logger.info(f"URL Parameter statistics generated: {param_out}")
-            except IOError as e:
-                logger.error(f"Failed to write parameter summary: {e}")
-
-    if config.cluster_depth:
-        from collections import Counter
-        global_depth = Counter()
-        total_cluster = 0
-        for s in global_stats:
-            global_depth.update(s.get("depth_stats", {}))
-            total_cluster += s.get("cluster_lines", 0)
-            
-        if global_depth:
-            depth_out = (output_dir / "depth_clustering_summary.txt") if output_dir else Path("depth_clustering_summary.txt")
-            try:
-                with depth_out.open('w', encoding='utf-8') as f:
-                    f.write("Recon-Filter Depth Clustering Summary\n")
-                    f.write("="*40 + "\n")
-                    f.write(f"Total entries processed: {total_cluster}\n\n")
-                    
-                    most_common = global_depth.most_common(1)
-                    if most_common:
-                        f.write(f"Most common depth: {most_common[0][0]} ({most_common[0][1]} lines)\n\n")
-                    
-                    f.write("Depth Distribution:\n")
-                    for depth, count in global_depth.most_common():
-                         f.write(f"  - {depth}: {count} hits\n")
-                if visuals: logger.info(f"Path Depth Clustering summary generated: {depth_out}")
-            except IOError as e:
-                logger.error(f"Failed to write depth summary: {e}")
-                
     # Exporter Generation Pipeline
     if config.export_stats_path:
         export_path = Path(config.export_stats_path)

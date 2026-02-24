@@ -50,21 +50,22 @@ class FilterConfig:
     preview: bool = False
     append_mode: bool = False
     
-    # Auditing & Caching Checksums
-    enable_cache: bool = False
+    # Reporting & Auditing
     export_stats_path: Optional[str] = None
     report_format: str = "json" # "json" | "csv"
     no_backup: bool = False
     backup_dir: Optional[str] = None
     generate_hash_report: bool = False
     performance_report: bool = False
-
-    # URL Processing & Classification Validation
-    url_mode: bool = False
-    no_url_validate: bool = False
+    
+    # URL & Cluster Engines
+    strict_url: bool = False
+    allow_no_scheme: bool = False
     extract_params: bool = False
-    cluster_extension: bool = False
-    cluster_depth: bool = False
+    param_report: bool = False
+    group_by_extension: bool = False
+    group_by_depth: bool = False
+    depth_limit: Optional[int] = None
 
     def __post_init__(self):
         self.match_logic = self.match_logic.lower()
@@ -116,6 +117,13 @@ class ConfigManager:
             match_logic="or",
             remove_duplicates=True,
             safe_mode=True,
-            adaptive_mode=True
+            adaptive_mode=True,
+            strict_url=False,
+            allow_no_scheme=False,
+            extract_params=False,
+            param_report=False,
+            group_by_extension=False,
+            group_by_depth=False,
+            depth_limit=None
         )
         ConfigManager.save(default_config, filepath)

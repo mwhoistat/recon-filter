@@ -59,6 +59,16 @@ recon-filter ./logs -k keywords.txt --export-stats audit.json
 recon-filter stats audit.json
 ```
 
+### Advanced URL Analysis & Clustering
+Integrate natively into Bug Bounty payloads generating active parameter dictionaries mapped securely from raw data hits.
+```bash
+recon-filter ./data --strict-url --extract-params --param-report
+```
+By utilizing clustering flags, targets resolve elegantly into respective depth directories splitting bulk data efficiently:
+```bash
+recon-filter ./endpoints.txt --group-by-extension --group-by-depth --depth-limit 3
+```
+
 ### Safe Caching
 Averts redundant cycles strictly bypassing targeted extractions seamlessly using internal SHA256 limits securely.
 ```bash
