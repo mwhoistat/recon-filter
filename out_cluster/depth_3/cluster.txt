@@ -1,0 +1,3 @@
+https://example.com/api/v1/users?version=2&active=true
+/var/log/syslog
+https://example.com/docs/guides/setup.md?active=false

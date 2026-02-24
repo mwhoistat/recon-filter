@@ -1,0 +1,6 @@
+[
+  "ERROR: database connection timed out",
+  "ERROR: disk space critically low",
+  "ERROR: authorization failed for user admin",
+  "WARN: database query took too long"
+]

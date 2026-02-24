@@ -1,0 +1,1 @@
+https://test.io/assets/main.js?v=hash123

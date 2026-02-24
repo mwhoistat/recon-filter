@@ -1,0 +1,10 @@
+Recon-Filter Depth Clustering Summary
+========================================
+Total entries processed: 6
+
+Most common depth: depth_3 (3 lines)
+
+Depth Distribution:
+  - depth_3: 3 hits
+  - depth_1: 2 hits
+  - depth_2: 1 hits

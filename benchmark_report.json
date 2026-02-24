@@ -1,0 +1,11 @@
+{
+    "version": "v4",
+    "file_mb": 49.99999713897705,
+    "throughput_lines_sec": 40673.491619404354,
+    "throughput_mb_sec": 3.9177156959150694,
+    "duration": 12.762538433074951,
+    "hardware_constraints": {
+        "peak_memory_mb": 50.34,
+        "average_cpu_percent": 99.04
+    }
+}

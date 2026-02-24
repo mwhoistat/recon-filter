@@ -1,0 +1,28 @@
+{
+    "total_urls_analyzed_for_params": 5,
+    "total_unique_parameters": 4,
+    "top_10_most_frequent_parameters": [
+        {
+            "parameter": "active",
+            "frequency": 3
+        },
+        {
+            "parameter": "version",
+            "frequency": 1
+        },
+        {
+            "parameter": "v",
+            "frequency": 1
+        },
+        {
+            "parameter": "q",
+            "frequency": 1
+        }
+    ],
+    "complete_frequency_distribution": {
+        "version": 1,
+        "active": 3,
+        "v": 1,
+        "q": 1
+    }
+}
