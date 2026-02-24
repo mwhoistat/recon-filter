@@ -1,6 +1,0 @@
-https://example.com/api/v1/users?version=2&active=true
-https://test.io/assets/main.js?v=hash123
-https://test.io/index.html
-/var/log/syslog
-https://example.com/docs/guides/setup.md?active=false
-https://example.com/search?q=123&active=true
