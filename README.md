@@ -13,7 +13,7 @@ Recon-Filter V1.0.0 is cleanly distributed as a compliant Python CLI structure.
 
 ### From Source (Recommended for latest updates)
 ```bash
-git clone https://github.com/krvst/recon-filter.git
+git clone https://github.com/mwhoistat/recon-filter.git
 cd recon-filter
 
 # Creates the deterministic 'recon-filter' executable on your PATH natively
