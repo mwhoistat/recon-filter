@@ -3,13 +3,19 @@ PDF text extraction and writing hook logic processing memory efficiently nativel
 """
 from pathlib import Path
 from typing import Iterator
-import pypdf
+try:
+    import pypdf
+    HAS_PYPDF = True
+except ImportError:
+    HAS_PYPDF = False
 
 from recon_filter.config import FilterConfig
 from recon_filter.engine.interfaces import FileReader, OutputWriter
 
 class PdfFileReader(FileReader):
     def __init__(self, filepath: Path, config: FilterConfig):
+        if not HAS_PYPDF:
+            raise RuntimeError("PDF processing requires the 'pypdf' package. Install with: pip install recon-filter[pdf]")
         super().__init__(filepath, config)
         
     def read(self) -> Iterator[str]:
@@ -29,6 +35,8 @@ class PdfOutputWriter(OutputWriter):
     """
     def __init__(self, filepath: Path, config: FilterConfig):
         super().__init__(filepath, config)
+        if not HAS_PYPDF:
+            raise RuntimeError("PDF processing requires the 'pypdf' package. Install with: pip install recon-filter[pdf]")
         self.writer = pypdf.PdfWriter()
         self.file = None
         

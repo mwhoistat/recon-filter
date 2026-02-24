@@ -2,7 +2,11 @@
 Execution bounds ensuring processes don't exceed memory vectors or traverse dangerous paths.
 """
 import os
-import psutil
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 from pathlib import Path
 from typing import Optional
 
@@ -11,6 +15,8 @@ MEMORY_CRITICAL_BYTES = 2 * 1024 * 1024 * 1024
 
 def enforce_memory_sandbox():
     """Validates the execution layer hasn't vastly exceeded physical hardware heuristics."""
+    if not HAS_PSUTIL:
+        return
     process = psutil.Process(os.getpid())
     current_memory = process.memory_info().rss
     

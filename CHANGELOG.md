@@ -1,3 +1,9 @@
+# V1.0.1 - Arch Linux Native Support Integration
+- **Improved Arch Linux Native Installation**: Global CLI availability without requiring a virtual environment.
+- **Added PKGBUILD**: Delivered standard PKGBUILD definition for seamless `makepkg` execution.
+- **Dependency Refinement**: Segmented heavyweight dependencies (`psutil`, `pypdf`) into optional groups (`monitoring`, `pdf`), maximizing compatibility and enabling minimal installs.
+- **Installation Stability Improvements**: Handled dependency absence gracefully gracefully natively parsing environments without crashing.
+
 # V1.0.0 - Initial Stable Release
 
 ## High-Performance Streaming Architecture

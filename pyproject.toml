@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "recon-filter"
-version = "1.0.0"
+version = "1.0.1"
 description = "Professional Stream Processing Engine for System Logs & Recon Data"
 readme = "README.md"
 authors = [{name = "krvst"}]
@@ -23,13 +23,14 @@ dependencies = [
     "rich>=13.0.0",
     "PyYAML>=6.0.0",
     "questionary>=2.0.0",
-    "pypdf>=3.17.0",
     "charset-normalizer>=3.3.0",
-    "psutil>=5.9.0",
     "ijson>=3.2.3"
 ]
 
 [project.optional-dependencies]
+pdf = ["pypdf>=3.17.0"]
+monitoring = ["psutil>=5.9.0"]
+all = ["pypdf>=3.17.0", "psutil>=5.9.0"]
 dev = [
     "pytest>=7.0.0",
 ]

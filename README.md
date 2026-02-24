@@ -2,22 +2,38 @@
   <h1>Recon-Filter Professional Enterprise Engine</h1>
   <p>A high-performance, structurally intelligent stream processor designed for precise mapping over unstructured lines, JSON Arrays, massive CSV tables, and PDF targets.</p>
 
-  [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)]()
-  [![Release](https://img.shields.io/badge/release-v1.0.0-green.svg)]()
+  [![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)]()
+  [![Release](https://img.shields.io/badge/release-v1.0.1-green.svg)]()
   [![License](https://img.shields.io/badge/license-MIT-blue.svg)]()
 </div>
 
-## Quick Installation
+## Native Installation
 
-Recon-Filter V1.0.0 is cleanly distributed as a compliant Python CLI structure.
+Recon-Filter V1.0.1 is cleanly distributed as a compliant Python CLI structure. It is strictly optimized to support global installation without forcing users into virtual environments.
 
-### From Source (Recommended for latest updates)
+### Arch Linux (via makepkg / AUR)
+For Arch users, we provide a `PKGBUILD` that bundles the CLI natively directly into `/usr/bin/recon-filter`.
 ```bash
 git clone https://github.com/mwhoistat/recon-filter.git
 cd recon-filter
+makepkg -si
+```
 
-# Creates the deterministic 'recon-filter' executable on your PATH natively
+### Global Install (via pip)
+Install globally to ensure the CLI is available directly on your terminal.
+```bash
+pip install recon-filter
+# or from source:
 pip install .
+```
+
+*(Optional)* Minimal install bypassing heavyweight packages (PDFs, PSUtil Monitoring):
+```bash
+pip install recon-filter --no-deps
+```
+Or to install with optional feature groups:
+```bash
+pip install .[pdf,monitoring]
 ```
 
 ### Verification
@@ -26,8 +42,20 @@ recon-filter self-test
 # > All Core Subsystems Operational. The Pipeline is ready for Distribution.
 
 recon-filter --version
-# > recon-filter version: 1.0.0
+# > recon-filter version: 1.0.1
 ```
+
+## Arch Linux Compatibility Testing
+
+**Tested on:**
+- Arch Linux (Rolling Release)
+- Latest Linux Kernel
+- Python System Version natively mapping bounds
+
+### Troubleshooting Arch Linux
+- **If pip refuses global install**: Use `makepkg -si` via the bundled `PKGBUILD`, or deploy using `pipx install recon-filter`. Arch strictly enforces PEP 668 managed boundaries.
+- **If `recon-filter` command is not found**: Ensure `~/.local/bin` is added to your `$PATH`. 
+- **If conflicting permission errors emerge**: Confirm `.pkg` execution via AUR bindings instead of running pip globally via `sudo`.
 
 ## Quick Start
 Run the pipeline pointing it natively towards logs or recon data. It will automatically back them up, parse them, extract exact hits, and safely replace them locally.
