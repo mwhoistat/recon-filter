@@ -1,8 +1,0 @@
-ERROR: database connection timed out
-INFO: user logged in successfully
-WARN: high memory usage detected
-ERROR: disk space critically low
-DEBUG: starting scheduled maintenance
-INFO: system check passed smoothly
-ERROR: authorization failed for user admin
-WARN: database query took too long
