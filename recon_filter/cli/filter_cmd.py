@@ -5,6 +5,7 @@ import time
 import os
 import json
 import csv
+import mimetypes
 import concurrent.futures
 from pathlib import Path
 from typing import List, Optional
@@ -101,6 +102,7 @@ def filter_cmd(
     exclude: List[str] = typer.Option([], "--exclude", help="Glob patterns to ignore (e.g., '*.map')."),
     match_logic: str = typer.Option("or", "--match-logic", help="Combinatorial logic: 'and' | 'or'."),
     no_duplicates: bool = typer.Option(False, "--no-duplicates", "-d", help="Strict duplicate removal hashing."),
+    dedupe_scope: str = typer.Option("line", "--dedupe-scope", help="Deduplication scope: 'line' | 'normalized' | 'url-normalized'."),
     limit: Optional[int] = typer.Option(None, "--limit", "-l", help="Halt processing after N matches."),
     timeout: Optional[int] = typer.Option(None, "--timeout", "-t", help="Enforce maximum execution block time."),
     
@@ -111,11 +113,14 @@ def filter_cmd(
     preview: bool = typer.Option(False, "--preview", "-p", help="Render first hits natively simulating matches without making IO replacements."),
     dry_run: bool = typer.Option(False, "--dry-run", help="Simulate pipeline without performing disk IO."),
     append: bool = typer.Option(False, "--append", "-a", help="Append to outputs instead of overwriting."),
+    no_footer: bool = typer.Option(False, "--no-footer", help="Suppress final output file structural summary footers."),
+    no_default_keyword: bool = typer.Option(False, "--no-default-keyword", help="Disable the default fallback recon dictionary."),
     
     # V4 Constraints
     memory_limit: Optional[int] = typer.Option(None, "--memory-limit", help="System RAM constraint limit matching (MB)."),
     max_workers: Optional[int] = typer.Option(None, "--max-workers", help="Max threaded execution loops mapping heavily."),
     no_parallel: bool = typer.Option(False, "--no-parallel", help="Force single-thread logic bypass."),
+    safe_parallel: bool = typer.Option(False, "--safe-parallel", help="Adaptively bottleneck core limits mitigating massive parallel memory blocks conservatively."),
     adaptive_mode: bool = typer.Option(True, "--adaptive-mode/--no-adaptive-mode", help="Adaptive Thread pool bounds ensuring limits map flawlessly natively."),
     strict_performance: bool = typer.Option(False, "--strict-performance", help="Suppresses visual abstractions mapping fastest bounds."),
     enable_cache: bool = typer.Option(False, "--enable-cache", help="Skip unchanged SHA256 processing assets securely."),
@@ -177,6 +182,7 @@ def filter_cmd(
                 regex_pattern=regex,
                 match_logic=match_logic,
                 remove_duplicates=no_duplicates,
+                dedupe_scope=dedupe_scope,
                 match_limit=limit,
                 timeout=timeout,
                 safe_mode=safe_mode,
@@ -185,12 +191,15 @@ def filter_cmd(
                 memory_limit_mb=memory_limit,
                 max_workers=max_workers,
                 no_parallel=no_parallel,
+                safe_parallel=safe_parallel,
                 adaptive_mode=adaptive_mode,
                 strict_performance=strict_performance,
                 enable_cache=enable_cache,
                 dry_run=dry_run,
                 preview=preview,
                 append_mode=append,
+                no_footer=no_footer,
+                no_default_keyword=no_default_keyword,
                 export_stats_path=export_stats,
                 report_format=report_format,
                 no_backup=no_backup,
@@ -213,6 +222,28 @@ def filter_cmd(
     resolved_files = _expand_files(files, recursive, exclude)
     total_files = len(resolved_files)
     
+    # ---------------------------------------------------------
+    # Default Keyword Injector
+    # ---------------------------------------------------------
+    # Triggers strictly if no pattern was given and default bypass is inactive
+    if not config.regex_pattern and not config.keywords and not config.no_default_keyword:
+        config.keywords = FilterConfig.DEFAULT_RECON_KEYWORDS
+        if verbose:
+             logger.info("No matching rules detected -> Auto-loaded Default Recon Keywords for scanning.")
+
+    # ---------------------------------------------------------
+    # Mimetypes Smart Conflict Warning
+    # ---------------------------------------------------------
+    if verbose:
+        for fpath in resolved_files:
+             mtype, _ = mimetypes.guess_type(str(fpath))
+             if mtype:
+                 # Evaluate standard text bounds natively checking if binary extensions map incorrectly
+                 if fpath.suffix.lower() == '.json' and 'json' not in mtype.lower():
+                     logger.warning(f"Mimetype Mismatch Warning: {fpath.name} implies JSON but traces as {mtype}")
+                 elif fpath.suffix.lower() == '.csv' and 'csv' not in mtype.lower():
+                     logger.warning(f"Mimetype Mismatch Warning: {fpath.name} implies CSV but traces as {mtype}")
+             
     if total_files == 0:
         logger.error("Error: Input files not found. Please verify the provided paths or directory recursions.")
         raise typer.Exit(1)
@@ -237,7 +268,7 @@ def filter_cmd(
     total_matches = 0
     
     # Map thread boundaries
-    workers = ConcurrencyManager.resolve_optimal_workers(config.max_workers, config.no_parallel)
+    workers = ConcurrencyManager.resolve_optimal_workers(config.max_workers, config.no_parallel, config.safe_parallel)
 
     def process_file_bound(file_path: Path) -> dict:
         processor = EngineProcessor(file_path, output_dir, config)

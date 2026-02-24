@@ -1,6 +1,6 @@
 """
 Configuration classes and managers for the recon-filter v4.
-Supports streaming constraints, adaptive concurrency, caching, and atomic monitoring.
+Supports streaming constraints, adaptive concurrency, caching, atomic monitoring, and global default keys.
 """
 import json
 from dataclasses import dataclass, field, asdict
@@ -13,6 +13,18 @@ class FilterConfig:
     """
     Holds configuration settings for the filtering operations natively.
     """
+    
+    # Built-in Default Recon Keywords
+    DEFAULT_RECON_KEYWORDS = [
+        "api", "apikey", "api_key", "token", "access_token", "secret",
+        "password", "passwd", "auth", "authorization",
+        "admin", "backup", "internal", "private",
+        "config", "db", "database",
+        "key", "credential",
+        "debug", "dev", "staging",
+        "endpoint", "callback", "redirect"
+    ]
+
     # Core Pattern rules
     keywords: List[str] = field(default_factory=list)
     exclude_keywords: List[str] = field(default_factory=list)
@@ -22,6 +34,7 @@ class FilterConfig:
     case_sensitive: bool = False
     match_logic: str = "or"  # "and" | "or"
     remove_duplicates: bool = False
+    dedupe_scope: str = "line" # "line" | "normalized" | "url-normalized"
     strip_whitespace: bool = False
     min_length: int = 0
     max_length: Optional[int] = None
@@ -41,6 +54,7 @@ class FilterConfig:
     memory_limit_mb: Optional[int] = None
     max_workers: Optional[int] = None
     no_parallel: bool = False
+    safe_parallel: bool = False
     adaptive_mode: bool = True
     strict_performance: bool = False
     enable_cache: bool = False
@@ -49,6 +63,8 @@ class FilterConfig:
     dry_run: bool = False
     preview: bool = False
     append_mode: bool = False
+    no_footer: bool = False
+    no_default_keyword: bool = False
     
     # Reporting & Auditing
     export_stats_path: Optional[str] = None
@@ -71,6 +87,10 @@ class FilterConfig:
         self.match_logic = self.match_logic.lower()
         if self.match_logic not in ["and", "or"]:
             raise ValueError("match_logic must be 'and' or 'or'")
+        
+        self.dedupe_scope = self.dedupe_scope.lower()
+        if self.dedupe_scope not in ["line", "normalized", "url-normalized"]:
+            raise ValueError("dedupe_scope must be 'line', 'normalized', or 'url-normalized'")
 
 
 class ConfigManager:

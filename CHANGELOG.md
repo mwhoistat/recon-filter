@@ -1,5 +1,13 @@
-# V1.0.1 - Arch Linux Native Support Integration
-- **Improved Arch Linux Native Installation**: Global CLI availability without requiring a virtual environment.
+# V1.0.2 - Core Stability & Advanced Deduplication Update
+- **Fixed `psutil` import crash**: Handled offline optional mapping gracefully globally.
+- **Made performance monitoring optional**: Refactored concurrency bindings dynamically resolving CPU constraints without `psutil`.
+- **Added built-in default keywords**: Auto-loads standard Bug Bounty targeting definitions when explicit keys aren't provided.
+- **Added `doctor` command**: Introduces diagnostic checks analyzing RAM allocations, core counts, and installation integrity instantly.
+- **Added advanced deduplication scoping**: Added `--dedupe-scope` mapping natively to `line`, `normalized`, or `url-normalized` matching behaviors.
+- **Output Summary Footer**: Appends clean structural execution analytics directly onto the filtered file.
+- **Improved Installation Robustness**: Cleanly executes offline inside `~/Tools/recon-filter` boundaries globally via native `pipx` or `pip .`.
+
+# V1.0.1 - Arch Linux Native Support Integration- **Improved Arch Linux Native Installation**: Global CLI availability without requiring a virtual environment.
 - **Added PKGBUILD**: Delivered standard PKGBUILD definition for seamless `makepkg` execution.
 - **Dependency Refinement**: Segmented heavyweight dependencies (`psutil`, `pypdf`) into optional groups (`monitoring`, `pdf`), maximizing compatibility and enabling minimal installs.
 - **Installation Stability Improvements**: Handled dependency absence gracefully gracefully natively parsing environments without crashing.

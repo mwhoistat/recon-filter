@@ -2,6 +2,7 @@
 Core orchestrator managing the Strategy Pattern resolution and file lifecycle dynamically.
 """
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Type, Optional, Tuple
 
@@ -13,6 +14,7 @@ from recon_filter.engine.filtering import RuleCompiler, apply_filters
 from recon_filter.engine.audit import AuditLogger
 
 from recon_filter.engine.cache import CacheManager
+from recon_filter.version import __version__
 from recon_filter.engine.performance import PerformanceMonitor
 from recon_filter.engine.url_analyzer import UrlAnalyzer
 
@@ -191,7 +193,19 @@ class EngineProcessor(FileProcessor):
                     if is_match:
                         is_duplicate = False
                         if self.config.remove_duplicates:
-                            h = hash(str(target_chunk))
+                            scope_target = str(target_chunk)
+                            if self.config.dedupe_scope == 'normalized':
+                                scope_target = scope_target.strip().lower()
+                            elif self.config.dedupe_scope == 'url-normalized':
+                                # Strips queries and fragments natively checking URLs purely
+                                from urllib.parse import urlparse, urlunparse
+                                try:
+                                    p = urlparse(scope_target)
+                                    scope_target = urlunparse((p.scheme, p.netloc, p.path, '', '', '')).lower()
+                                except ValueError:
+                                    scope_target = scope_target.strip().lower()
+
+                            h = hash(scope_target)
                             if h in seen_hashes:
                                 is_duplicate = True
                             seen_hashes.add(h)
@@ -207,7 +221,21 @@ class EngineProcessor(FileProcessor):
             raise RuntimeError(f"Permission Denied. Please elevate user access for {self.file_path.name}")
         finally:
             # We explicitly trigger all active IO contextual teardowns ensuring atomic guarantees
+            footer_lines = []
+            if not self.config.no_footer and out_ext not in ['.json', '.csv']:
+                ts = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+                footer_lines = [
+                    "",
+                    f"Processed by recon-filter v{__version__}",
+                    f"Total matches: {matches_found}",
+                    f"Unique entries: {unique_matches}",
+                    f"Generated at: {ts}"
+                ]
+
             for c_writer in active_writers.values():
+                if footer_lines and matches_found > 0:
+                     for fl in footer_lines:
+                         c_writer.write(fl)
                 c_writer.success = True if matches_found > 0 else False
                 c_writer.__exit__(None, None, None)
                 

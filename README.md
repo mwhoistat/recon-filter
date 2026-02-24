@@ -3,7 +3,7 @@
   <p>A high-performance, structurally intelligent stream processor designed for precise mapping over unstructured lines, JSON Arrays, massive CSV tables, and PDF targets.</p>
 
   [![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)]()
-  [![Release](https://img.shields.io/badge/release-v1.0.1-green.svg)]()
+  [![Release](https://img.shields.io/badge/release-v1.0.2-green.svg)]()
   [![License](https://img.shields.io/badge/license-MIT-blue.svg)]()
 </div>
 
@@ -42,7 +42,18 @@ recon-filter self-test
 # > All Core Subsystems Operational. The Pipeline is ready for Distribution.
 
 recon-filter --version
-# > recon-filter version: 1.0.1
+# > recon-filter version: 1.0.2
+```
+
+### Running from ~/Tools/recon-filter
+If installing strictly from an external tools directory mapped globally without virtual environments:
+```bash
+git clone https://github.com/mwhoistat/recon-filter.git ~/Tools/recon-filter
+cd ~/Tools/recon-filter
+
+# Install directly bypassing environments safely
+pip install . --user
+# Ensure ~/.local/bin is structurally in your $PATH
 ```
 
 ## Arch Linux Compatibility Testing
@@ -56,6 +67,20 @@ recon-filter --version
 - **If pip refuses global install**: Use `makepkg -si` via the bundled `PKGBUILD`, or deploy using `pipx install recon-filter`. Arch strictly enforces PEP 668 managed boundaries.
 - **If `recon-filter` command is not found**: Ensure `~/.local/bin` is added to your `$PATH`. 
 - **If conflicting permission errors emerge**: Confirm `.pkg` execution via AUR bindings instead of running pip globally via `sudo`.
+
+## Core Enhancements (v1.0.2)
+
+### Optional Dependencies & Running Without `psutil`
+Recon-Filter defaults to using Python Standard Libraries. It cleanly handles the absence of heavyweight monitoring dependencies natively:
+- **`psutil`** (Performance Limits): If absent, the engine bypasses `MemoryError` tracking natively, gracefully executing structural filtering without crashing.
+- **`pypdf`** (PDF parsing): Optional handler execution.
+Install with: `pip install recon-filter[monitoring,pdf]`
+
+### Built-in Default Keyword Behavior
+When executing without strict `--regex` or `-k keywords.txt` logic, Recon-Filter instantly routes against an internal suite of 25+ standard Bug Bounty keys (e.g., `api`, `token`, `password`, `config`). To suppress this, use `--no-default-keyword`.
+
+### Smart Detection & Output Diagnostics
+The pipeline accurately compares structural `mimetypes` alerting outputs against conflicting mappings. Resulting text files automatically render standard diagnostic footers natively outlining matches tracked explicitly (opt-out utilizing `--no-footer`).
 
 ## Quick Start
 Run the pipeline pointing it natively towards logs or recon data. It will automatically back them up, parse them, extract exact hits, and safely replace them locally.

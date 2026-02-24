@@ -1,12 +1,17 @@
 """
 Adaptive thread bounding ensuring hardware parity mapping.
 """
-import psutil
+import os
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 from typing import Optional
 
 class ConcurrencyManager:
     @staticmethod
-    def resolve_optimal_workers(override_workers: Optional[int] = None, no_parallel: bool = False) -> int:
+    def resolve_optimal_workers(override_workers: Optional[int] = None, no_parallel: bool = False, safe_parallel: bool = False) -> int:
         """Determines CPU pools mapping max 70% natively."""
         if no_parallel:
             return 1
@@ -14,10 +19,19 @@ class ConcurrencyManager:
         if override_workers:
             return override_workers
             
-        cores = psutil.cpu_count(logical=True) or 1
+        if HAS_PSUTIL:
+            cores = psutil.cpu_count(logical=True) or 1
+        else:
+            cores = os.cpu_count() or 1
         
         # We target ~70% maximum extraction avoiding server lag spikes
         adaptive_limit = max(1, int(cores * 0.7))
+        
+        if safe_parallel:
+            # Strictly limit to 2 or cores * 0.3 for pure backgrounding bounds avoiding RAM spikes
+            safe_limit = max(1, int(cores * 0.3))
+            return min(adaptive_limit, min(2, safe_limit))
+            
         return adaptive_limit
         
     @staticmethod

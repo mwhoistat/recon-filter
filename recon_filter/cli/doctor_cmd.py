@@ -3,7 +3,6 @@ Diagnoses RAM capacity, thread allowances, dependency installations, and permiss
 """
 import sys
 import os
-import psutil
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -31,16 +30,24 @@ def doctor_cmd(
     table.add_row("Operating System Platform", sys.platform)
     
     # Memory Hardware constraints
-    mem = psutil.virtual_memory()
-    total_mem_gb = mem.total / (1024 ** 3)
-    available_mem_gb = mem.available / (1024 ** 3)
-    table.add_row("Total System RAM Allocation", f"{total_mem_gb:.2f} GB")
-    table.add_row("Available Sandbox Memory", f"{available_mem_gb:.2f} GB")
-    
-    if available_mem_gb < 1.0:
-        table.add_row("Sandbox Stability Risk", "[red]CRITICAL - Memory Exhaustion Imminent[/red]")
-    else:
-        table.add_row("Sandbox Stability Risk", "Optimal")
+    try:
+        import psutil
+        mem = psutil.virtual_memory()
+        total_mem_gb = mem.total / (1024 ** 3)
+        available_mem_gb = mem.available / (1024 ** 3)
+        table.add_row("Total System RAM Allocation", f"{total_mem_gb:.2f} GB")
+        table.add_row("Available Sandbox Memory", f"{available_mem_gb:.2f} GB")
+        
+        if available_mem_gb < 1.0:
+            table.add_row("Sandbox Stability Risk", "[red]CRITICAL - Memory Exhaustion Imminent[/red]")
+        else:
+            table.add_row("Sandbox Stability Risk", "Optimal")
+            
+    except ImportError:
+        table.add_row("Total System RAM Allocation", "[yellow]psutil missing (Optional Dependency)[/yellow]")
+        table.add_row("Available Sandbox Memory", "[yellow]psutil missing (Optional Dependency)[/yellow]")
+        table.add_row("Sandbox Stability Risk", "Unknown (Install via pip install recon-filter[monitoring])")
+        available_mem_gb = 999.0 # Bypassing logical warnings if psutil is gone
 
     # Storage I/O Check
     cwd = os.getcwd()

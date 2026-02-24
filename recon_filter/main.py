@@ -13,7 +13,7 @@ from recon_filter.cli.filter_cmd import app as filter_app
 from recon_filter.cli.stats_cmd import app as stats_app
 from recon_filter.cli.validate_cmd import app as validate_app
 from recon_filter.cli.version_cmd import app as version_app
-from recon_filter.cli.doctor_cmd import app as doctor_app
+from recon_filter.cli.doctor_cmd import doctor_cmd
 from recon_filter.cli.clean_cmd import app as clean_app
 from recon_filter.cli.config_cmd import app as config_app
 from recon_filter.cli.benchmark_cmd import app as benchmark_app
@@ -37,7 +37,7 @@ app.add_typer(filter_app, name="filter")
 app.add_typer(stats_app, name="stats")
 app.add_typer(validate_app, name="validate")
 app.add_typer(version_app, name="version")
-app.add_typer(doctor_app, name="doctor")
+app.command(name="doctor")(doctor_cmd)
 app.add_typer(clean_app, name="clean")
 app.add_typer(config_app, name="config")
 app.add_typer(benchmark_app, name="benchmark")
