@@ -3,7 +3,7 @@
   <p>A high-performance, structurally intelligent stream processor designed for precise mapping over unstructured lines, JSON Arrays, massive CSV tables, and PDF targets.</p>
 
   [![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)]()
-  [![Release](https://img.shields.io/badge/release-v1.0.2-green.svg)]()
+  [![Release](https://img.shields.io/badge/release-v1.1.0-green.svg)]()
   [![License](https://img.shields.io/badge/license-MIT-blue.svg)]()
 </div>
 
@@ -68,7 +68,41 @@ pip install . --user
 - **If `recon-filter` command is not found**: Ensure `~/.local/bin` is added to your `$PATH`. 
 - **If conflicting permission errors emerge**: Confirm `.pkg` execution via AUR bindings instead of running pip globally via `sudo`.
 
-## Core Enhancements (v1.0.2)
+## Core Enhancements (v1.1.0)
+
+### Smart Filtering Engine (`--smart-mode`)
+Activate intelligent context-aware filtering with a single flag:
+```bash
+recon-filter filter ./targets.txt --smart-mode
+```
+- **Priority Keyword Scoring**: High-value keywords (`apikey=10`, `secret=9`, `token=8`) are weighted above generic terms
+- **Fuzzy Matching**: Catches near-miss keywords using `difflib.SequenceMatcher` (e.g., `pasword` matches `password`)
+- **URL Structure Bonuses**: URLs with query parameters automatically score higher
+- **Chain Filtering**: keyword → URL → parameter → path cluster pipeline
+
+Custom priority keywords:
+```bash
+recon-filter filter ./data --smart-mode --priority-keyword "jwt" --priority-keyword "bearer"
+```
+
+Adjust fuzzy sensitivity:
+```bash
+recon-filter filter ./data --smart-mode --fuzzy-threshold 0.8
+```
+
+### Updating via Package Manager
+```bash
+# Arch Linux / CachyOS / Manjaro
+yay -Syu recon-filter
+# or local PKGBUILD
+cd ~/Tools/recon-filter && makepkg -si
+
+# Debian / Ubuntu
+pip install --upgrade recon-filter
+
+# Check for updates
+recon-filter update --check
+```
 
 ### Optional Dependencies & Running Without `psutil`
 Recon-Filter defaults to using Python Standard Libraries. It cleanly handles the absence of heavyweight monitoring dependencies natively:

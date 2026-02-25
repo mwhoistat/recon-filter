@@ -1,3 +1,14 @@
+# V1.1.0 - Smart Filtering Engine & Full Code Audit
+- **Smart Filtering Engine**: Context-aware scoring with priority keyword weights, fuzzy matching via `difflib`, and URL structure bonuses.
+- **`--smart-mode`**: Single flag activating all intelligent filtering features at once.
+- **`--priority-keyword`**: Boost specific keywords to maximum scoring weight (repeatable flag).
+- **`--fuzzy-threshold`**: Configure similarity threshold for fuzzy keyword matching (default: 0.75).
+- **Multi-Layer Chain Filtering**: keyword → URL → parameter → path cluster pipeline.
+- **Update Mechanism**: Distro-specific upgrade instructions with automatic `/etc/os-release` detection (Arch/Debian/Fedora/openSUSE).
+- **Full Code Audit**: Fixed stale `cli/__init__.py` imports, hardcoded version strings, dead code references, and legacy module imports.
+- **Suppressed Startup Update Checks**: Version checks now only run on `--force-update-check` or `recon-filter update --check`.
+- **PKGBUILD**: Updated to v1.1.0 for yay/pacman compatibility.
+
 # V1.0.2 - Core Stability & Advanced Deduplication Update
 - **Fixed `psutil` import crash**: Handled offline optional mapping gracefully globally.
 - **Made performance monitoring optional**: Refactored concurrency bindings dynamically resolving CPU constraints without `psutil`.

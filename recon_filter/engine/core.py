@@ -17,6 +17,7 @@ from recon_filter.engine.cache import CacheManager
 from recon_filter.version import __version__
 from recon_filter.engine.performance import PerformanceMonitor
 from recon_filter.engine.url_analyzer import UrlAnalyzer
+from recon_filter.engine.smart_engine import SmartScorer
 
 from recon_filter.engine.interfaces import FileProcessor, FileReader, OutputWriter
 from recon_filter.engine.handlers.text_handler import TextFileReader, TextOutputWriter
@@ -33,6 +34,13 @@ class EngineProcessor(FileProcessor):
         self.cache = CacheManager()
         self.perf_monitor = PerformanceMonitor(memory_limit_mb=config.memory_limit_mb)
         self.url_analyzer = UrlAnalyzer(config)
+        self.smart_scorer = None
+        if config.smart_mode:
+            self.smart_scorer = SmartScorer(
+                priority_keywords=config.priority_keywords,
+                fuzzy_threshold=config.fuzzy_threshold,
+                custom_weights=config.keyword_scores if config.keyword_scores else None,
+            )
         
     def _resolve_strategy(self) -> Tuple[Type[FileReader], Type[OutputWriter]]:
         """Maps target extensions or force configs to strict parsing engines."""
@@ -189,6 +197,15 @@ class EngineProcessor(FileProcessor):
 
                     is_match, score = apply_filters(target_chunk, self.config, compiled_regex, deadline=timeout_deadline)
                     lines_scanned += 1
+
+                    # Smart scoring overlay: fuzzy + priority weights
+                    if self.smart_scorer and isinstance(target_chunk, str):
+                        smart_score, smart_matched = self.smart_scorer.score_line(
+                            target_chunk, self.config.keywords
+                        )
+                        score += smart_score
+                        if smart_matched and not is_match:
+                            is_match = True  # Fuzzy match promoted this line
                     
                     if is_match:
                         is_duplicate = False

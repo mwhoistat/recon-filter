@@ -7,7 +7,7 @@ from typing import Optional
 import typer
 from rich.console import Console
 
-from recon_filter.filters import compile_regex
+from recon_filter.engine.filtering import RuleCompiler
 from recon_filter.utils import setup_logger
 
 app = typer.Typer()
@@ -25,7 +25,7 @@ def validate_cmd(
     
     if regex:
         try:
-            compile_regex(regex, False) # test parse without executing against log line
+            RuleCompiler.compile_regex(regex, False, False)
             console.print(f"✅ [bold green]Regex Pattern Validation Successful:[/bold green] {regex}")
         except ValueError as e:
             console.print(f"❌ [bold red]Regex Pattern Failed Validation:[/bold red] {e}")

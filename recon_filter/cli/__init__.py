@@ -2,19 +2,24 @@
 Recon-Filter CLI Engine Subcommands Module
 """
 
-from .filter_cmd import app as filter_app
-from .stats_cmd import app as stats_app
-from .validate_cmd import app as validate_app
-from .version_cmd import app as version_app
-
+from .filter_cmd import filter_cmd
+from .stats_cmd import stats_cmd
+from .validate_cmd import validate_cmd
+from .version_cmd import version_cmd
+from .doctor_cmd import doctor_cmd
+from .clean_cmd import clean_cmd
+from .benchmark_cmd import benchmark_cmd
+from .update_cmd import update_cmd
+from .selftest_cmd import selftest_cmd
 
 __all__ = [
-    "filter_app",
-    "stats_app",
-    "validate_app",
-    "version_app",
+    "filter_cmd",
+    "stats_cmd",
+    "validate_cmd",
+    "version_cmd",
     "doctor_cmd",
     "clean_cmd",
-    "config_cmd",
-    "benchmark_cmd"
+    "benchmark_cmd",
+    "update_cmd",
+    "selftest_cmd",
 ]

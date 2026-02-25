@@ -83,6 +83,11 @@ class FilterConfig:
     group_by_depth: bool = False
     depth_limit: Optional[int] = None
 
+    # Smart Filtering Engine
+    smart_mode: bool = False
+    priority_keywords: List[str] = field(default_factory=list)
+    fuzzy_threshold: float = 0.75
+
     def __post_init__(self):
         self.match_logic = self.match_logic.lower()
         if self.match_logic not in ["and", "or"]:

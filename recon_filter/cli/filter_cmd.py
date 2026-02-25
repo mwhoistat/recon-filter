@@ -137,6 +137,11 @@ def filter_cmd(
     group_by_depth: bool = typer.Option(False, "--group-by-depth", help="Dispatch matches categorically based on URL branch depths."),
     depth_limit: Optional[int] = typer.Option(None, "--depth-limit", help="Bound maximum depth generation arrays."),
     
+    # Smart Filtering Engine
+    smart_mode: bool = typer.Option(False, "--smart-mode", help="Activate intelligent scoring, fuzzy matching, and chain filtering."),
+    priority_keyword: Optional[List[str]] = typer.Option(None, "--priority-keyword", help="Keywords boosted to maximum priority weight (repeatable)."),
+    fuzzy_threshold: float = typer.Option(0.75, "--fuzzy-threshold", help="Fuzzy matching similarity threshold (0.0 - 1.0)."),
+
     # Auditing / Checksums
     no_backup: bool = typer.Option(False, "--no-backup", help="Disable structural source file backups."),
     backup_dir: Optional[str] = typer.Option(None, "--backup-dir", help="Shift backup `.bak` entities into isolated domains."),
@@ -212,7 +217,10 @@ def filter_cmd(
                 param_report=param_report,
                 group_by_extension=group_by_ext,
                 group_by_depth=group_by_depth,
-                depth_limit=depth_limit
+                depth_limit=depth_limit,
+                smart_mode=smart_mode,
+                priority_keywords=priority_keyword or [],
+                fuzzy_threshold=fuzzy_threshold
             )
     except Exception as e:
         logger.error(f"Error: Configuration validation rejected: {e}")

@@ -23,13 +23,13 @@ from recon_filter.cli.selftest_cmd import selftest_cmd
 app = typer.Typer(
     name="recon-filter",
     help=(
-        "Recon-Filter v1.0.0 High-Performance File Filtering Engine.\n\n"
+        f"Recon-Filter v{__version__} High-Performance File Filtering Engine.\n\n"
         "A strict, streaming memory-safe CLI designed for extracting URLs, "
         "passwords, and critical tokens from massive multi-gigabyte datasets "
         "across Arch, Debian, Ubuntu, and Fedora Linux nodes perfectly."
     ),
     add_completion=False,
-    invoke_without_command=True, # Critical for interactive menu routing
+    invoke_without_command=True,
     no_args_is_help=False
 )
 
@@ -100,10 +100,10 @@ def global_callback(
         console.print(f"recon-filter version: [bold cyan]{__version__}[/bold cyan]")
         raise typer.Exit()
         
-    # Asynchronous lightweight update checks natively binding globally
-    if not no_update_check:
+    # Update checks only run when explicitly requested
+    if force_update_check:
         checker = UpdateChecker()
-        checker.check_for_updates(force=force_update_check)
+        checker.check_for_updates(force=True)
 
     # Boot into interactive menu if zero targets supplied natively
     if ctx.invoked_subcommand is None and not no_menu and not version:

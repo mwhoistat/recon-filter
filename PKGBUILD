@@ -1,6 +1,6 @@
 # Maintainer: krvst
 pkgname=recon-filter
-pkgver=1.0.1
+pkgver=1.1.0
 pkgrel=1
 pkgdesc="Professional Stream Processing Engine for System Logs & Recon Data"
 arch=('any')
