@@ -9,16 +9,16 @@ from rich.console import Console
 from recon_filter.version import __version__
 from recon_filter.engine.update_check import UpdateChecker
 
-from recon_filter.cli.filter_cmd import app as filter_app
-from recon_filter.cli.stats_cmd import app as stats_app
-from recon_filter.cli.validate_cmd import app as validate_app
-from recon_filter.cli.version_cmd import app as version_app
+from recon_filter.cli.filter_cmd import filter_cmd
+from recon_filter.cli.stats_cmd import stats_cmd
+from recon_filter.cli.validate_cmd import validate_cmd
+from recon_filter.cli.version_cmd import version_cmd
 from recon_filter.cli.doctor_cmd import doctor_cmd
-from recon_filter.cli.clean_cmd import app as clean_app
-from recon_filter.cli.config_cmd import app as config_app
-from recon_filter.cli.benchmark_cmd import app as benchmark_app
-from recon_filter.cli.update_cmd import app as update_app
-from recon_filter.cli.selftest_cmd import app as selftest_app
+from recon_filter.cli.clean_cmd import clean_cmd
+from recon_filter.cli.config_cmd import init_cmd as config_cmd
+from recon_filter.cli.benchmark_cmd import benchmark_cmd
+from recon_filter.cli.update_cmd import update_cmd
+from recon_filter.cli.selftest_cmd import selftest_cmd
 
 app = typer.Typer(
     name="recon-filter",
@@ -33,16 +33,16 @@ app = typer.Typer(
     no_args_is_help=False
 )
 
-app.add_typer(filter_app, name="filter")
-app.add_typer(stats_app, name="stats")
-app.add_typer(validate_app, name="validate")
-app.add_typer(version_app, name="version")
+app.command(name="filter")(filter_cmd)
+app.command(name="stats")(stats_cmd)
+app.command(name="validate")(validate_cmd)
+app.command(name="version")(version_cmd)
 app.command(name="doctor")(doctor_cmd)
-app.add_typer(clean_app, name="clean")
-app.add_typer(config_app, name="config")
-app.add_typer(benchmark_app, name="benchmark")
-app.add_typer(update_app, name="update")
-app.add_typer(selftest_app, name="self-test")
+app.command(name="clean")(clean_cmd)
+app.command(name="config")(config_cmd)
+app.command(name="benchmark")(benchmark_cmd)
+app.command(name="update")(update_cmd)
+app.command(name="self-test")(selftest_cmd)
 
 console = Console()
 
