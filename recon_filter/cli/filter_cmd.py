@@ -116,15 +116,11 @@ def filter_cmd(
     no_footer: bool = typer.Option(False, "--no-footer", help="Suppress final output file structural summary footers."),
     no_default_keyword: bool = typer.Option(False, "--no-default-keyword", help="Disable the default fallback recon dictionary."),
     
-    # V4 Constraints
-    memory_limit: Optional[int] = typer.Option(None, "--memory-limit", help="System RAM constraint limit matching (MB)."),
-    max_workers: Optional[int] = typer.Option(None, "--max-workers", help="Max threaded execution loops mapping heavily."),
-    no_parallel: bool = typer.Option(False, "--no-parallel", help="Force single-thread logic bypass."),
-    safe_parallel: bool = typer.Option(False, "--safe-parallel", help="Adaptively bottleneck core limits mitigating massive parallel memory blocks conservatively."),
-    adaptive_mode: bool = typer.Option(True, "--adaptive-mode/--no-adaptive-mode", help="Adaptive Thread pool bounds ensuring limits map flawlessly natively."),
-    strict_performance: bool = typer.Option(False, "--strict-performance", help="Suppresses visual abstractions mapping fastest bounds."),
-    enable_cache: bool = typer.Option(False, "--enable-cache", help="Skip unchanged SHA256 processing assets securely."),
-    performance_report: bool = typer.Option(False, "--performance-report", help="Adds internal CPU/RAM mappings into local report logs."),
+    memory_limit: Optional[int] = typer.Option(None, "--memory-limit", help="System RAM constraint limit (MB)."),
+    max_workers: Optional[int] = typer.Option(None, "--max-workers", help="Max threaded worker count."),
+    no_parallel: bool = typer.Option(False, "--no-parallel", help="Force single-thread execution."),
+    safe_parallel: bool = typer.Option(False, "--safe-parallel", help="Conservatively limit parallel workers."),
+    performance_report: bool = typer.Option(False, "--performance-report", help="Output CPU/RAM profiling data."),
     
     # URL Validation & Analysis
     strict_url: bool = typer.Option(False, "--strict-url", help="Drop targets that are not cleanly formatted URLs."),
@@ -137,10 +133,13 @@ def filter_cmd(
     group_by_depth: bool = typer.Option(False, "--group-by-depth", help="Dispatch matches categorically based on URL branch depths."),
     depth_limit: Optional[int] = typer.Option(None, "--depth-limit", help="Bound maximum depth generation arrays."),
     
-    # Smart Filtering Engine
-    smart_mode: bool = typer.Option(False, "--smart-mode", help="Activate intelligent scoring, fuzzy matching, and chain filtering."),
-    priority_keyword: Optional[List[str]] = typer.Option(None, "--priority-keyword", help="Keywords boosted to maximum priority weight (repeatable)."),
-    fuzzy_threshold: float = typer.Option(0.75, "--fuzzy-threshold", help="Fuzzy matching similarity threshold (0.0 - 1.0)."),
+    # Intelligence Engine
+    intelligent: bool = typer.Option(False, "--intelligent", help="Enable risk scoring, endpoint heuristics, and threat tagging."),
+    smart_mode: bool = typer.Option(False, "--smart-mode", help="Enable fuzzy matching and keyword scoring."),
+    priority_keyword: Optional[List[str]] = typer.Option(None, "--priority-keyword", help="Boost keyword to max priority (repeatable)."),
+    fuzzy_threshold: float = typer.Option(0.75, "--fuzzy-threshold", help="Fuzzy matching threshold (0.0-1.0)."),
+    risk_threshold: int = typer.Option(0, "--risk-threshold", help="Minimum risk score to include in output."),
+    sort_by_risk: bool = typer.Option(False, "--sort-by-risk", help="Sort output by risk score (highest first)."),
 
     # Auditing / Checksums
     no_backup: bool = typer.Option(False, "--no-backup", help="Disable structural source file backups."),
@@ -197,9 +196,6 @@ def filter_cmd(
                 max_workers=max_workers,
                 no_parallel=no_parallel,
                 safe_parallel=safe_parallel,
-                adaptive_mode=adaptive_mode,
-                strict_performance=strict_performance,
-                enable_cache=enable_cache,
                 dry_run=dry_run,
                 preview=preview,
                 append_mode=append,
@@ -218,9 +214,12 @@ def filter_cmd(
                 group_by_extension=group_by_ext,
                 group_by_depth=group_by_depth,
                 depth_limit=depth_limit,
+                intelligent=intelligent,
                 smart_mode=smart_mode,
                 priority_keywords=priority_keyword or [],
-                fuzzy_threshold=fuzzy_threshold
+                fuzzy_threshold=fuzzy_threshold,
+                risk_threshold=risk_threshold,
+                sort_by_risk=sort_by_risk
             )
     except Exception as e:
         logger.error(f"Error: Configuration validation rejected: {e}")
@@ -257,7 +256,7 @@ def filter_cmd(
         raise typer.Exit(1)
 
     # Output suppression during strict benchmarking targets natively
-    visuals = not config.strict_performance and not quiet
+    visuals = not quiet
     if visuals:
         logger.info(f"Target resolution complete. Initializing pipeline across {total_files} asset(s).")
     

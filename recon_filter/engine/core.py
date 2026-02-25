@@ -17,7 +17,7 @@ from recon_filter.engine.cache import CacheManager
 from recon_filter.version import __version__
 from recon_filter.engine.performance import PerformanceMonitor
 from recon_filter.engine.url_analyzer import UrlAnalyzer
-from recon_filter.engine.smart_engine import SmartScorer
+from recon_filter.engine.smart_engine import IntelligenceEngine
 
 from recon_filter.engine.interfaces import FileProcessor, FileReader, OutputWriter
 from recon_filter.engine.handlers.text_handler import TextFileReader, TextOutputWriter
@@ -34,12 +34,12 @@ class EngineProcessor(FileProcessor):
         self.cache = CacheManager()
         self.perf_monitor = PerformanceMonitor(memory_limit_mb=config.memory_limit_mb)
         self.url_analyzer = UrlAnalyzer(config)
-        self.smart_scorer = None
-        if config.smart_mode:
-            self.smart_scorer = SmartScorer(
+        self.intel_engine = None
+        if config.intelligent or config.smart_mode:
+            self.intel_engine = IntelligenceEngine(
                 priority_keywords=config.priority_keywords,
                 fuzzy_threshold=config.fuzzy_threshold,
-                custom_weights=config.keyword_scores if config.keyword_scores else None,
+                risk_threshold=config.risk_threshold,
             )
         
     def _resolve_strategy(self) -> Tuple[Type[FileReader], Type[OutputWriter]]:
@@ -68,7 +68,7 @@ class EngineProcessor(FileProcessor):
         # 1. State integrity & Smart Caching
         hash_pre = calculate_sha256(self.file_path)
         
-        if self.config.enable_cache and self.cache.is_cached(self.file_path, hash_pre):
+        if self.cache.is_cached(self.file_path, hash_pre):
             return {
                 "file": self.file_path.name,
                 "lines_scanned": 0,
@@ -198,14 +198,17 @@ class EngineProcessor(FileProcessor):
                     is_match, score = apply_filters(target_chunk, self.config, compiled_regex, deadline=timeout_deadline)
                     lines_scanned += 1
 
-                    # Smart scoring overlay: fuzzy + priority weights
-                    if self.smart_scorer and isinstance(target_chunk, str):
-                        smart_score, smart_matched = self.smart_scorer.score_line(
+                    # Intelligence engine overlay
+                    risk_tag_str = ""
+                    if self.intel_engine and isinstance(target_chunk, str):
+                        intel_score, risk_tag_str, classification, intel_matched = self.intel_engine.analyze(
                             target_chunk, self.config.keywords
                         )
-                        score += smart_score
-                        if smart_matched and not is_match:
-                            is_match = True  # Fuzzy match promoted this line
+                        score += intel_score
+                        if intel_matched and not is_match:
+                            is_match = True
+                        if not self.intel_engine.passes_threshold(score):
+                            is_match = False
                     
                     if is_match:
                         is_duplicate = False
@@ -268,8 +271,7 @@ class EngineProcessor(FileProcessor):
             hash_post = "unmodified"
         else:
             hash_post = calculate_sha256(out_file) if self.config.generate_hash_report else "disabled"
-            if self.config.enable_cache:
-                self.cache.update_cache(self.file_path, hash_pre)
+            self.cache.update_cache(self.file_path, hash_pre)
         
         # 7. Auditing logs
         self.audit.log_execution(self.file_path, self.config, unique_matches, hash_post)

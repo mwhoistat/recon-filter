@@ -16,7 +16,6 @@ def test_cache_bypassing(tmp_path):
         
     config = FilterConfig(
         regex_pattern="error",
-        enable_cache=True,
     )
     
     # Run 1: Should process and cache

@@ -1,3 +1,26 @@
+# V2.0.0 - Risk Intelligence Engine & Major Refactor
+
+## Breaking Changes
+- `--strict-performance`, `--enable-cache`, `--adaptive-mode` flags removed (auto-managed)
+- `SmartScorer` class replaced by `IntelligenceEngine`
+- Dead legacy modules (`cli.py`, `core.py`, `filters.py`) removed
+
+## New Features
+- **Risk Intelligence Engine**: Extension risk scoring, parameter sensitivity analysis, path depth evaluation, endpoint heuristics (admin/API/backup/dev detection)
+- **Risk Tagging**: Output lines tagged `[HIGH]`, `[MEDIUM]`, `[LOW]` based on computed risk score
+- **`--intelligent`**: Activate full risk scoring and endpoint heuristics
+- **`--risk-threshold N`**: Filter output by minimum risk score
+- **`--sort-by-risk`**: Sort output by risk score (highest first)
+- **Bilingual Interface**: English and Bahasa Indonesia language selection at startup
+- **AUR Publishing**: Valid PKGBUILD + .SRCINFO + step-by-step AUR push guide
+- **Distro-Aware Update**: Auto-detects Linux distribution for upgrade instructions
+
+## Improvements
+- CLI flags simplified and help text rewritten
+- `validate` command fixed to use proper `RuleCompiler` module
+- Version check suppressed by default (only on `--force-update-check`)
+- `doctor` command enhanced with dependency and environment checks
+
 # V1.1.0 - Smart Filtering Engine & Full Code Audit
 - **Smart Filtering Engine**: Context-aware scoring with priority keyword weights, fuzzy matching via `difflib`, and URL structure bonuses.
 - **`--smart-mode`**: Single flag activating all intelligent filtering features at once.

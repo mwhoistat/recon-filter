@@ -56,8 +56,7 @@ class FilterConfig:
     no_parallel: bool = False
     safe_parallel: bool = False
     adaptive_mode: bool = True
-    strict_performance: bool = False
-    enable_cache: bool = False
+    performance_report: bool = False
     
     # Security & Execution Modifiers
     dry_run: bool = False
@@ -83,10 +82,13 @@ class FilterConfig:
     group_by_depth: bool = False
     depth_limit: Optional[int] = None
 
-    # Smart Filtering Engine
+    # Intelligence Engine
+    intelligent: bool = False
     smart_mode: bool = False
     priority_keywords: List[str] = field(default_factory=list)
     fuzzy_threshold: float = 0.75
+    risk_threshold: int = 0
+    sort_by_risk: bool = False
 
     def __post_init__(self):
         self.match_logic = self.match_logic.lower()

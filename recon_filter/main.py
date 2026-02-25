@@ -1,5 +1,5 @@
 """
-Main Typer application entrypoint handling top-level routing and interactive menus.
+Main Typer application entrypoint with bilingual interactive menu and CLI routing.
 """
 import sys
 import typer
@@ -8,6 +8,7 @@ from rich.console import Console
 
 from recon_filter.version import __version__
 from recon_filter.engine.update_check import UpdateChecker
+from recon_filter.i18n import t, set_language
 
 from recon_filter.cli.filter_cmd import filter_cmd
 from recon_filter.cli.stats_cmd import stats_cmd
@@ -23,14 +24,17 @@ from recon_filter.cli.selftest_cmd import selftest_cmd
 app = typer.Typer(
     name="recon-filter",
     help=(
-        f"Recon-Filter v{__version__} High-Performance File Filtering Engine.\n\n"
-        "A strict, streaming memory-safe CLI designed for extracting URLs, "
-        "passwords, and critical tokens from massive multi-gigabyte datasets "
-        "across Arch, Debian, Ubuntu, and Fedora Linux nodes perfectly."
+        f"Recon-Filter v{__version__} — Risk Intelligence Filtering Engine.\n\n"
+        "Stream-processing CLI for extracting URLs, credentials, and high-risk\n"
+        "targets from massive datasets with risk scoring and endpoint heuristics.\n\n"
+        "Features: --intelligent risk scoring, --smart-mode fuzzy matching,\n"
+        "multi-format preservation (TXT/JSON/CSV/PDF), URL clustering,\n"
+        "parameter extraction, and bilingual interface (EN/ID).\n\n"
+        "Update: yay -Syu recon-filter (Arch) | pip install --upgrade recon-filter"
     ),
     add_completion=False,
     invoke_without_command=True,
-    no_args_is_help=False
+    no_args_is_help=False,
 )
 
 app.command(name="filter")(filter_cmd)
@@ -46,68 +50,82 @@ app.command(name="self-test")(selftest_cmd)
 
 console = Console()
 
-def run_interactive_menu():
-    """Builds a clean, professional, non-emoji interactive interface for recon-filter."""
-    console.print(f"\n[bold cyan]Recon Filter v{__version__}[/bold cyan]\n")
-    
-    choice = questionary.select(
-        "Select an option:",
-        choices=[
-            "Filter file",
-            "Analyze URLs",
-            "Generate statistics",
-            "Configuration",
-            "Help",
-            "Exit"
-        ]
+
+def _select_language():
+    """Prompt for language selection."""
+    lang = questionary.select(
+        "Select Language / Pilih Bahasa:",
+        choices=["English", "Bahasa Indonesia"],
     ).ask()
-    
-    if choice == "Filter file":
-        import os
+
+    if lang == "Bahasa Indonesia":
+        set_language("id")
+    else:
+        set_language("en")
+
+
+def run_interactive_menu():
+    """Bilingual interactive menu for recon-filter."""
+    console.print(f"\n[bold cyan]Recon Filter v{__version__}[/bold cyan]\n")
+
+    _select_language()
+
+    choice = questionary.select(
+        t("menu_select"),
+        choices=[
+            t("menu_filter"),
+            t("menu_intelligent"),
+            t("menu_url"),
+            t("menu_settings"),
+            t("menu_help"),
+            t("menu_exit"),
+        ],
+    ).ask()
+
+    import os
+
+    if choice == t("menu_filter"):
         os.system("recon-filter filter")
-    elif choice == "Analyze URLs":
-        console.print("[yellow]Hint:[/yellow] URL Analysis uses the filter engine natively.")
-        import os
+    elif choice == t("menu_intelligent"):
+        console.print(f"[yellow]{t('hint_intelligent')}[/yellow]")
+        os.system("recon-filter filter --intelligent")
+    elif choice == t("menu_url"):
+        console.print(f"[yellow]{t('hint_url')}[/yellow]")
         os.system("recon-filter filter --extract-params")
-    elif choice == "Generate statistics":
-        import os
-        os.system("recon-filter stats --help")
-    elif choice == "Configuration":
-        import os
+    elif choice == t("menu_settings"):
         os.system("recon-filter config")
-    elif choice == "Help":
-        import os
+    elif choice == t("menu_help"):
         os.system("recon-filter --help")
     else:
-        # Exit implicitly securely
         raise typer.Exit(0)
+
 
 @app.callback()
 def global_callback(
     ctx: typer.Context,
     version: bool = typer.Option(False, "--version", help="Show version and exit."),
-    no_menu: bool = typer.Option(False, "--no-menu", help="Bypass interactive menu when no args provided."),
-    no_update_check: bool = typer.Option(False, "--no-update-check", help="Disable checking GitHub for updates."),
-    force_update_check: bool = typer.Option(False, "--force-update-check", help="Force a check for updates, overriding cache."),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show verbose output.")
+    no_menu: bool = typer.Option(False, "--no-menu", help="Bypass interactive menu for direct CLI usage."),
+    no_update_check: bool = typer.Option(False, "--no-update-check", help="Disable update checking."),
+    force_update_check: bool = typer.Option(False, "--force-update-check", help="Force a remote update check."),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output."),
 ):
     """
-    Recon-Filter High-Performance Text Extraction Engine.
-    
-    Compatible Targets: Arch Linux, Debian, Ubuntu, Fedora.
+    Recon-Filter v2 — Risk Intelligence Filtering Engine.
+
+    Supports: Arch Linux, Debian, Ubuntu, Fedora, CachyOS, Manjaro, openSUSE.
+    Update: yay -Syu recon-filter | pipx upgrade recon-filter
     """
     if version:
         console.print(f"recon-filter version: [bold cyan]{__version__}[/bold cyan]")
         raise typer.Exit()
-        
-    # Update checks only run when explicitly requested
+
     if force_update_check:
         checker = UpdateChecker()
         checker.check_for_updates(force=True)
 
-    # Boot into interactive menu if zero targets supplied natively
     if ctx.invoked_subcommand is None and not no_menu and not version:
         run_interactive_menu()
+
 
 if __name__ == "__main__":
     app()

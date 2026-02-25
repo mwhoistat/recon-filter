@@ -4,7 +4,12 @@ Unit tests for the core filtering and matching logic in recon-filter.
 import pytest
 import re
 from recon_filter.config import FilterConfig
-from recon_filter.filters import apply_filters, compile_regex
+from recon_filter.engine.filtering import RuleCompiler, apply_filters
+
+
+def compile_regex(pattern, case_sensitive):
+    """Compat wrapper for tests."""
+    return RuleCompiler.compile_regex(pattern, case_sensitive, False)
 
 
 def test_compile_regex_valid():
